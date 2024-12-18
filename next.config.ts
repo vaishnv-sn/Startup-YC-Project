@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-
+  experimental: { after: true },
   devIndicators: {
     appIsrStatus: true,
     buildActivity: true,
