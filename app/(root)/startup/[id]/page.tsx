@@ -16,6 +16,8 @@ async function Page({ params }: { params: Promise<{ id: string }> }) {
 
   const post = await client.fetch(STARTUP_QUERY_BY_ID, { id });
 
+  console.log(post);
+
   if (!post) return notFound();
 
   const parsedContent = md.render(post?.pitch || "");
