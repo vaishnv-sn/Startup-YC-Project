@@ -1,6 +1,6 @@
 import { formateDate } from "@/lib/utils";
 import { client } from "@/sanity/lib/client";
-import { STARTUP_QUERY_BY_ID } from "@/sanity/lib/queries";
+import { PLAYLIST_BY_SLUG, STARTUP_QUERY_BY_ID } from "@/sanity/lib/queries";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -8,15 +8,21 @@ import markdownit from "markdown-it";
 import { Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import View from "@/components/View";
+import StartupCard, { StartupTypeCard } from "@/components/StartupCard";
 
 const md = markdownit();
+
+export const experimental_ppr = true;
 
 async function Page({ params }: { params: Promise<{ id: string }> }) {
   const id = (await params).id;
 
-  const post = await client.fetch(STARTUP_QUERY_BY_ID, { id });
-
-  console.log(post);
+  const [post, { select: editorPosts }] = await Promise.all([
+    client.fetch(STARTUP_QUERY_BY_ID, { id }),
+    client.fetch(PLAYLIST_BY_SLUG, {
+      slug: "new-arrivals",
+    }),
+  ]);
 
   if (!post) return notFound();
 
@@ -71,7 +77,16 @@ async function Page({ params }: { params: Promise<{ id: string }> }) {
         </div>
         <hr className="divider" />
 
-        {/* TODO: Editor Selected startups */}
+        {editorPosts?.length > 0 && (
+          <div className="max-w-4xl mx-auto">
+            <p className="text-30-semibold">New Arrivals</p>
+            <ul className="mt-7 card_grid-sm">
+              {editorPosts.map((post: StartupTypeCard, i: number) => (
+                <StartupCard key={i} post={post} />
+              ))}
+            </ul>
+          </div>
+        )}
 
         <Suspense fallback={<Skeleton className="view_skeleton" />}>
           <View id={id} />
